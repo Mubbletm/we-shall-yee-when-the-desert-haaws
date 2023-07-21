@@ -6,6 +6,11 @@ public class PlayerMove : MonoBehaviour
 {
     //public int accelerationFrames = 5;
     public float speed = 0.5f;
+    public KeyCode up = KeyCode.W;
+    public KeyCode down = KeyCode.S;
+    public KeyCode left = KeyCode.A;
+    public KeyCode right = KeyCode.D;
+
 
     //private float actualSpeed = 0f;
 
@@ -16,22 +21,22 @@ public class PlayerMove : MonoBehaviour
         bool moving = false;
         Vector3 movement = new Vector3(0f, 0f, 0f);
 
-        if (Input.GetKey(KeyCode.K))
+        if (Input.GetKey(left))
         {
             moving = true;
             movement += new Vector3(-1f, 0f, 0f);
         }
-        if (Input.GetKey(KeyCode.Semicolon))
+        if (Input.GetKey(right))
         {
             moving = true;
             movement += new Vector3(1f, 0f, 0f);
         }
-        if (Input.GetKey(KeyCode.L))
+        if (Input.GetKey(down))
         {
             moving = true;
             movement += new Vector3(0f, -1f, 0f);
         }
-        if (Input.GetKey(KeyCode.O))
+        if (Input.GetKey(up))
         {
             moving = true;
             movement += new Vector3(0f, 1f, 0f);
