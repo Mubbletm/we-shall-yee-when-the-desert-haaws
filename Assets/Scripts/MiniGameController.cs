@@ -6,13 +6,17 @@ using UnityEngine.Events;
 public class MiniGameController : MonoBehaviour
 {
 
-    public string MiniGameName;
+    public string MiniGameName
+    {
+        get { return gameObject.scene.name; }
+    }
+
     public Cowboy Owner;
     public GameObject MiniGameRoot;
     public UnityAction OnGameStart;
 
     public delegate void FinishedGameHandler(MiniGameController miniGameController);
-    private static event FinishedGameHandler OnGameFinish;
+    private event FinishedGameHandler OnGameFinish;
 
     /// <summary>
     /// Plays the current minigame.
@@ -21,21 +25,21 @@ public class MiniGameController : MonoBehaviour
     public void Play(FinishedGameHandler finishedGameHandler)
     {
         MiniGameRoot.SetActive(true);
-        OnGameStart();
+        if (OnGameStart != null) OnGameStart.Invoke();
         OnGameFinish = finishedGameHandler;
     }
 
     public void Stop()
     {
         MiniGameRoot.SetActive(false);
-        OnGameFinish(this);
+        OnGameFinish.Invoke(this);
     }
 
     // Start is called before the first frame update
     void Start()
     {
-        MiniGameManager miniGameManager = GameObject.Find("MiniGameManager").GetComponent<MiniGameManager>();
-        miniGameManager.AddMiniGame(this);
+        MiniGameManager miniGameManager = GameObject.Find("Minigame Manager").GetComponent<MiniGameManager>();
+        Debug.Log(miniGameManager.AddMiniGame(this));
         if (Owner = null) Owner = new Cowboy("placeholder");
         // TODO: Hide all gameobjects except self.
         MiniGameRoot.SetActive(false);
@@ -44,6 +48,6 @@ public class MiniGameController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.Escape)) Stop();
     }
 }

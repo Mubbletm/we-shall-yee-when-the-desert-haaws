@@ -1,10 +1,11 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class MiniGameManager : MonoBehaviour
 {
-
+    public string[] Minigames;
     public bool isPlaying
     {
         get { return _isPlaying; }
@@ -23,6 +24,7 @@ public class MiniGameManager : MonoBehaviour
             return;
         }
         miniGame.Play(OnGameFinish);
+        this._isPlaying = true;
     }
 
     /// <summary>
@@ -31,7 +33,7 @@ public class MiniGameManager : MonoBehaviour
     /// <param name="cowboyName"></param>
     public void Play(string miniGameName)
     {
-        MiniGameController miniGame = _MiniGames.Find(o => o.name.Equals(miniGameName));
+        MiniGameController miniGame = _MiniGames.Find(o => o.MiniGameName.Equals(miniGameName));
         if (miniGame == null) throw new System.NullReferenceException("Couldn't find minigame with given name.");
         Play(miniGame);
     }
@@ -68,6 +70,7 @@ public class MiniGameManager : MonoBehaviour
 
     public void OnGameFinish(MiniGameController miniGameController)
     {
+        this._isPlaying = false;
             if (_MiniGameQueue.Count > 0)
             {
                 MiniGameController miniGame = _MiniGameQueue.Dequeue();
@@ -80,7 +83,7 @@ public class MiniGameManager : MonoBehaviour
 
     public bool AddMiniGame(MiniGameController miniGameController)
     {
-        MiniGameController existing = _MiniGames.Find(o => o.name.Equals(miniGameController.name));
+        MiniGameController existing = _MiniGames.Find(o => o.MiniGameName.Equals(miniGameController.name));
         if (existing != null) return false;
         _MiniGames.Add(miniGameController);
         return true;
@@ -94,12 +97,12 @@ public class MiniGameManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        
+        foreach (string minigame in Minigames) SceneManager.LoadSceneAsync(minigame, LoadSceneMode.Additive);
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (Input.GetKeyDown(KeyCode.Space)) Play("HorseRacing");
     }
 }
