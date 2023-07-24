@@ -1,27 +1,54 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
 public class HorseMovement : MonoBehaviour
 {
-    public float MoveLimiter = .7f;
     public float Acceleration = 10f;
-    public float MaxForce = 40f;
-    public float RotationSpeed = .1f;
+    public float MaxSpeed = 100f;
+    public float RotationSpeed = 4f;
+    public float SteeringAccelerationModifier = 3f;
+    public float ReverseModifier = .2f;
+    public float DriftingBoundary = 10f;
+    public float VolumeModifier = 5f;
+    public float VolumeOffset = .2f;
+    
+    public bool isDrifting
+    {
+        get { return _isDrifting; }
+    }
 
     private Rigidbody2D rigidbody2D;
-    private float Rotation = 0f;
+    private AudioSource audioSource;
+    private ParticleSystem particleSystem;
 
-    // Start is called before the first frame update
-    void Start()
+    private float Rotation = 0f;
+    private bool _isDrifting = false;
+    private bool isPlayingAudio;
+    private bool isReversing = false;
+
+    void Awake()
     {
         rigidbody2D = GetComponent<Rigidbody2D>();
+        audioSource = GetComponent<AudioSource>();
+        particleSystem = GetComponent<ParticleSystem>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
+        if (isDrifting && !isPlayingAudio)
+        {
+            audioSource.Play();
+            particleSystem.Play();
+            isPlayingAudio = true;
+            return;
+        }
+
+        if (!isDrifting && isPlayingAudio)
+        {
+            audioSource.Stop();
+            particleSystem.Stop();
+            isPlayingAudio = false;
+        }
     }
 
     private void FixedUpdate()
@@ -29,22 +56,19 @@ public class HorseMovement : MonoBehaviour
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
 
-        // This is only effective for keyboard controls.
-        if (horizontal != 0 && vertical != 0)
-        {
-            horizontal *= MoveLimiter;
-            vertical *= MoveLimiter;
-        }
+        isReversing = vertical < 0;
 
-        Vector2 lookDirection = new Vector2(Mathf.Min(MaxForce, horizontal * Acceleration), Mathf.Min(MaxForce, vertical * Acceleration));
+        if (isReversing) vertical *= ReverseModifier;
+        rigidbody2D.AddRelativeForce(new Vector2(0, vertical * Acceleration));
+        rigidbody2D.velocity = Vector2.ClampMagnitude(rigidbody2D.velocity, MaxSpeed - (Mathf.Abs(horizontal) * SteeringAccelerationModifier));
+        audioSource.volume = rigidbody2D.velocity.magnitude / MaxSpeed * VolumeModifier - VolumeOffset;
 
-        rigidbody2D.AddForce(lookDirection);
+        float steeringWheelRotation = rigidbody2D.velocity.magnitude / MaxSpeed;
+        float rotation = Mathf.Lerp(rigidbody2D.rotation, (isReversing ? 1 : -1) * horizontal * RotationSpeed + rigidbody2D.rotation, steeringWheelRotation);
 
-        if (lookDirection.x != 0f || lookDirection.y != 0f)
-        {
-            Rotation = Mathf.Atan2(-lookDirection.normalized.y, -lookDirection.normalized.x) * Mathf.Rad2Deg;
-        }
-        rigidbody2D.MoveRotation(Mathf.LerpAngle(rigidbody2D.rotation, Rotation + 90, RotationSpeed));
+        _isDrifting = Mathf.Abs(rigidbody2D.transform.InverseTransformDirection(rigidbody2D.velocity).x) > DriftingBoundary;
+
+        rigidbody2D.MoveRotation(rotation);
 
     }
 }
