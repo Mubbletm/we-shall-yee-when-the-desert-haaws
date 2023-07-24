@@ -11,7 +11,6 @@ public class FollowObject : MonoBehaviour
     public void FixedUpdate()
     {
         float adjustedIntensity = intensityCalculator(target.transform.position, boundingBox, intesity);
-        Debug.Log(adjustedIntensity);
         Vector2 newPostion = Vector2.Lerp(transform.position, target.transform.position, adjustedIntensity);
         transform.position = new Vector3(newPostion.x, newPostion.y, transform.position.z);
     }
@@ -20,7 +19,6 @@ public class FollowObject : MonoBehaviour
     {
         // It's a quarter because both the x and y axis are divided, resulting in 4 pieces.
         Vector2 boundingQuarter = boundingBox / 2;
-
         Vector2 relativePosition = target - (Vector2) transform.position;
 
         float xModifier = (Mathf.Abs(relativePosition.x) / boundingQuarter.x);
